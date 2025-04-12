@@ -8,6 +8,8 @@ from digit import Digit
 class DigitList:
     def __init__(self, rows: int, columns: int) -> None:
         self._columns = columns
+        # amount of ability to add unchecked digits to the end of the list
+        self._add_ability = 3
 
         # if list len is odd
         list_len = rows * columns
@@ -17,14 +19,9 @@ class DigitList:
         self._list = []
         for i in range(0, list_len, 2):
             random_value = randint(1, 9)
-            # self._list.append(Digit(random_value, *self._get_x_y_position(i)))
-            # self._list.append(Digit(random_value, *self._get_x_y_position(i+1)))
             self._list.append(Digit(random_value))
             self._list.append(Digit(random_value))
         shuffle(self._list)
-
-        # amount of ability to add unchecked digits to the end of the list
-        self._add_ability = 3
 
     # decrement ability and return new value
     def use_ability(self) -> int:
