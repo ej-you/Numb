@@ -3,9 +3,12 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 
+from kivy.logger import Logger
+
 from random import randint, shuffle
 
 from internal.base.digit import Digit
+from internal.base.digit_button import DigitButton
 from internal.services.digit_list_with_manager import DigitListWithManager
 
 
@@ -59,26 +62,40 @@ class Game:
         if instance.background_color == self.colors["normal"]:
             instance.background_color = self.colors.get("active")
             self.__pressed_digit_buttons.append(instance)
+            instance.text = "active"
         else:
             instance.background_color = self.colors["normal"]
             self.__pressed_digit_buttons.remove(instance)
+            instance.text = "normal"
 
         if len(self.__pressed_digit_buttons) == 2:
             for elem in self.__pressed_digit_buttons:
                 elem.background_color = self.colors["normal"]
 
+    def on_digit_btn_click(self, instance, state) -> None:
+        Logger.debug(f"Кнопка {instance.digit} -> {state}")
+        if state:
+            self.__pressed_digit_buttons.append(instance)
+        else:
+            self.__pressed_digit_buttons.remove(instance)
+
+        # if len(self.__pressed_digit_buttons) == 2:
+        #     for elem in self.__pressed_digit_buttons:
+        #         # elem.background_color = self.colors["normal"]
+        #         elem.on_press_action(elem)
 
     def __prepare_digit_list_to_display(self) -> GridLayout:
         btn_grid = GridLayout(
             cols=self.columns,
         )
         for elem in self.__digit_list:
-            btn = Button(
+            btn = DigitButton(
+                elem,
                 text=str(elem.get_value()),
             )
-            btn.background_normal = ""
-            btn.background_color = self.colors["normal"]
-            btn.bind(on_press=self.digit_btn_click)
+            # btn.bind(on_state_change=lambda instance, state: print(f"Состояние: {state}"))
+            # btn.bind(on_state_change=lambda instance: print(f"Кнопка {instance.digit} нажата"))
+            btn.bind(on_state_change=self.on_digit_btn_click)
             btn_grid.add_widget(btn)
         return btn_grid
 
