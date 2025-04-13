@@ -1,7 +1,7 @@
 from math import ceil
 from random import randint, shuffle
 
-from digit import Digit
+from internal.base.digit import Digit
 
 
 # digit buttons list class

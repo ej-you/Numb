@@ -1,4 +1,4 @@
-from digit_list import DigitList
+from internal.base.digit_list import DigitList
 
 
 # extends digit buttons list class with methods to check digit buttons
