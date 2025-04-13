@@ -1,7 +1,7 @@
 from kivy.uix.gridlayout import GridLayout
 from random import randint, shuffle
 
-from internal.base.digit_list_with_manager import DigitListWithManager
+from internal.services.digit_list_with_manager import DigitListWithManager
 from internal.display.digit import DigitDisplay
 
 
