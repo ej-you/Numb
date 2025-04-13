@@ -31,13 +31,11 @@ class DigitListWithManagerDisplay(DigitListWithManager):
             cols=self._columns,
         )
         for elem in self._list:
-            grid.add_widget(elem.display())
+            btn = elem.display()
+            elem.toggle(btn)
+            grid.add_widget(btn)
+            # grid.add_widget(elem.display())
         return grid
 
     def display(self) -> GridLayout:
         return self._grid
-
-    def refresh(self):
-        self.clear_widgets()  # Очищаем текущий grid
-        self.grid = self.create_grid()  # Создаём заново
-        self.add_widget(self.grid)

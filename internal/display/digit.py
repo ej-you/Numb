@@ -6,7 +6,7 @@ from internal.base.digit import Digit
 class DigitDisplay(Digit):
     # colors according to focus
     colors = {
-        False: [1, 1, 1, 1],
+        False: [1, 0, 1, 1],
         True: [1, 0, 0, 1],
     }
 
@@ -15,15 +15,19 @@ class DigitDisplay(Digit):
         self._focus = False
         self._button = None
 
-
-    def display(self):
+    def display(self) -> Button:
         self._button = Button(
             text=str(self._value),
         )
+        self._button.background_normal = ""
         self._button.background_color = self.colors[self._focus]
-        self._button.bind(state=self.toggle_color)
+        # self._button.bind(on_press=self.toggle_focus)
         return self._button
 
-    def toggle_color(self, instance):
+    def toggle_focus(self, instance) -> None:
         self._focus = not self._focus
-        self._button.background_color = self.colors[self._focus]
+        instance.background_color = self.colors[self._focus]
+        instance.text = "gdrthsrt"
+
+    def toggle(self, btn: Button):
+        btn.bind(on_press=self.toggle_focus)
