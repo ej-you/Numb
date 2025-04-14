@@ -1,3 +1,5 @@
+from kivy import Logger
+
 from internal.services.digit_list import DigitList
 from internal.base.digit import Digit
 
@@ -91,16 +93,19 @@ class DigitListWithManager(DigitList):
     ) -> (bool, int):
         max_x = max(first_x, second_x)
         min_x = min(first_x, second_x)
-        max_y = max(first_x, second_x)
+        max_y = max(first_y, second_y)
         min_y = min(first_y, second_y)
-        n = max_x - min_x
         # check digits placed on diagonal
-        if max_y - min_y != n:
+        if max_x - min_x != max_y - min_y:
             return False, 0
 
-        # check all digits between two given digits is checked
-        for i in range(min_x + 1, max_x):
-            if not self.get_digit_by_x_y(digit_list, i, i).is_checked():
+        # process ranges for x and y coords (that point to digits between selected digits)
+        x_range = (list(range(first_x, second_x)) if first_x < second_x else list(range(first_x, second_x, -1)))[1:]
+        y_range = (list(range(first_y, second_y)) if first_y < second_y else list(range(first_y, second_y, -1)))[1:]
+
+        # check all digits between two selected digits is checked
+        for i in range(len(x_range)):
+            if not self.get_digit_by_x_y(digit_list, x_range[i], y_range[i]).is_checked():
                 return False, 0
         return True, max_x - min_x
 
