@@ -58,31 +58,27 @@ class Game:
         self.__add_ability -= 1
         return self.__add_ability
 
-    def digit_btn_click(self, instance) -> None:
-        if instance.background_color == self.colors["normal"]:
-            instance.background_color = self.colors.get("active")
-            self.__pressed_digit_buttons.append(instance)
-            instance.text = "active"
-        else:
-            instance.background_color = self.colors["normal"]
-            self.__pressed_digit_buttons.remove(instance)
-            instance.text = "normal"
+    def digit_btn_click(self, instance, value) -> None:
+        # focus = instance.on_press_internal()
 
-        if len(self.__pressed_digit_buttons) == 2:
-            for elem in self.__pressed_digit_buttons:
-                elem.background_color = self.colors["normal"]
+        # if instance.focus:
+        #     self.__pressed_digit_buttons.append(instance)
+        # else:
+        #     self.__pressed_digit_buttons.remove(instance)
 
-    def on_digit_btn_click(self, instance, state) -> None:
-        Logger.debug(f"Кнопка {instance.digit} -> {state}")
-        if state:
-            self.__pressed_digit_buttons.append(instance)
-        else:
-            self.__pressed_digit_buttons.remove(instance)
+        # if instance.background_color == self.colors["normal"]:
+        #     instance.background_color = self.colors.get("active")
+        #     self.__pressed_digit_buttons.append(instance)
+        #     instance.text = "active"
+        # else:
+        #     instance.background_color = self.colors["normal"]
+        #     self.__pressed_digit_buttons.remove(instance)
+        #     instance.text = "normal"
 
         # if len(self.__pressed_digit_buttons) == 2:
         #     for elem in self.__pressed_digit_buttons:
-        #         # elem.background_color = self.colors["normal"]
-        #         elem.on_press_action(elem)
+        #         elem.background_color = self.colors["normal"]
+        Logger.debug(f"Кнопка {instance.digit} -> {instance.focus} | status: {value}")
 
     def __prepare_digit_list_to_display(self) -> GridLayout:
         btn_grid = GridLayout(
@@ -95,7 +91,14 @@ class Game:
             )
             # btn.bind(on_state_change=lambda instance, state: print(f"Состояние: {state}"))
             # btn.bind(on_state_change=lambda instance: print(f"Кнопка {instance.digit} нажата"))
-            btn.bind(on_state_change=self.on_digit_btn_click)
+            # btn.bind(on_focus_change=self.on_digit_btn_click)
+            # btn.bind(on_release=self.digit_btn_click)
+            # def callback(instance, value):
+            #     Logger.debug('My button <%s> state is <%s>' % (instance, value))
+            #     self.digit_btn_click(instance, value)
+            # btn.bind(state=callback)
+            btn.bind(state=lambda instance, value: self.digit_btn_click(instance, value))
+
             btn_grid.add_widget(btn)
         return btn_grid
 
