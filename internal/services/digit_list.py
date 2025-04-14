@@ -36,6 +36,10 @@ class DigitList:
     def _get_digit_index(digit_list: list[Digit], digit: Digit) -> int:
         return digit_list.index(digit)
 
+    # get digit x and y position in digits list
+    def get_x_y_for_digit(self, digit_list: list[Digit], digit: Digit) -> (int, int):
+        return self._get_x_y_position(self._get_digit_index(digit_list, digit))
+
     def __repr__(self):
         # digit_matrix = self.to_matrix()
         # digit_list = "\n\t".join([" ".join([str(digit_matrix[i][j]) for j in range(len(digit_matrix[i]))]) for i in range(len(digit_matrix))])

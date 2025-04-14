@@ -26,7 +26,7 @@ class Game:
         self.__game_over = False
 
         # list with pressed digit buttons instances
-        self.__pressed_digit_buttons = []
+        self.__pressed_digit_buttons: list[DigitButton] = []
 
         # amount of ability to add unchecked digits to the end of the list
         self.__add_ability = 3
@@ -58,27 +58,45 @@ class Game:
         self.__add_ability -= 1
         return self.__add_ability
 
-    def digit_btn_click(self, instance, value) -> None:
-        # focus = instance.on_press_internal()
+    def __process_digit_combination(self, digit_button1: DigitButton, digit_button2: DigitButton):
+        x1, y1 = self.__digit_manager.get_x_y_for_digit(self.__digit_list, digit_button1.digit)
+        x2, y2 = self.__digit_manager.get_x_y_for_digit(self.__digit_list, digit_button2.digit)
 
-        # if instance.focus:
-        #     self.__pressed_digit_buttons.append(instance)
-        # else:
-        #     self.__pressed_digit_buttons.remove(instance)
+        points = self.__digit_manager.check_digit_buttons(self.__digit_list, x1, y1, x2, y2)
+        # if combination is invalid then skip all the next actions
+        if not points:
+            return
 
-        # if instance.background_color == self.colors["normal"]:
-        #     instance.background_color = self.colors.get("active")
-        #     self.__pressed_digit_buttons.append(instance)
-        #     instance.text = "active"
-        # else:
-        #     instance.background_color = self.colors["normal"]
-        #     self.__pressed_digit_buttons.remove(instance)
-        #     instance.text = "normal"
+        self.__score += points
+        Logger.info(f"points {points} | score {self.__score}")
+        digit_button1.disable()
+        digit_button2.disable()
 
-        # if len(self.__pressed_digit_buttons) == 2:
-        #     for elem in self.__pressed_digit_buttons:
-        #         elem.background_color = self.colors["normal"]
-        Logger.debug(f"Кнопка {instance.digit} -> {instance.focus} | status: {value}")
+    def digit_btn_click(self, instance, status) -> None:
+        # срабатывает при нажатии и отпускании кнопки
+        # пропускаем обработку при нажатии
+        if status == "down":
+            return
+
+        # if button is pressed then append it to list
+        if instance.focus:
+            self.__pressed_digit_buttons.append(instance)
+        # if button is unpressed then remove it from list
+        else:
+            try:
+                self.__pressed_digit_buttons.remove(instance)
+            except ValueError:
+                Logger.warn(f"Кнопка {instance.digit} уже не в списке нажатых")
+
+        Logger.debug(f"Нажатые кнопки: {[elem.digit for elem in self.__pressed_digit_buttons]}")
+        if len(self.__pressed_digit_buttons) == 2:
+            # remove focus from two selected buttons
+            for elem in self.__pressed_digit_buttons:
+                elem.on_press_action(elem)
+            # start digit combination process
+            self.__process_digit_combination(*self.__pressed_digit_buttons)
+            # clear pressed digit buttons list
+            self.__pressed_digit_buttons = []
 
     def __prepare_digit_list_to_display(self) -> GridLayout:
         btn_grid = GridLayout(
@@ -89,16 +107,7 @@ class Game:
                 elem,
                 text=str(elem.get_value()),
             )
-            # btn.bind(on_state_change=lambda instance, state: print(f"Состояние: {state}"))
-            # btn.bind(on_state_change=lambda instance: print(f"Кнопка {instance.digit} нажата"))
-            # btn.bind(on_focus_change=self.on_digit_btn_click)
-            # btn.bind(on_release=self.digit_btn_click)
-            # def callback(instance, value):
-            #     Logger.debug('My button <%s> state is <%s>' % (instance, value))
-            #     self.digit_btn_click(instance, value)
-            # btn.bind(state=callback)
             btn.bind(state=lambda instance, value: self.digit_btn_click(instance, value))
-
             btn_grid.add_widget(btn)
         return btn_grid
 
