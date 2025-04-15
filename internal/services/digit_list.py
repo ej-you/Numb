@@ -36,5 +36,5 @@ class DigitList:
     def _get_x_y_position(self, list_position: int) -> (int, int):
         return list_position % self._columns, list_position // self._columns
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Digit list: columns - {self._columns}"

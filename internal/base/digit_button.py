@@ -21,7 +21,7 @@ class DigitButton(Digit, Button):
         True: color_light_gray,
     }
 
-    def __init__(self, value: int):
+    def __init__(self, value: int) -> None:
         Digit.__init__(self, value)
         Button.__init__(self)
         self.__focus = False
@@ -33,13 +33,13 @@ class DigitButton(Digit, Button):
         self.__setup_decorations()
 
     # custom on_press action using for bind on_press
-    def on_press_action(self, instance):
+    def on_press_action(self, instance) -> None:
         self.__focus = not self.__focus
         self.background_color = self.focus_background_colors[self.__focus]
         Logger.debug(f"DigitButton on_press: Button {self} | Focus after press: {self.__focus}")
 
     @property
-    def focus(self):
+    def focus(self) -> bool:
         return self.__focus
 
     # returns copy of current digit button with new uuid
@@ -54,7 +54,7 @@ class DigitButton(Digit, Button):
         super().check()
         self.disabled = True
 
-    def __setup_decorations(self):
+    def __setup_decorations(self) -> None:
         # base
         self.background_down = ''
         self.background_normal = ""

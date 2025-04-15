@@ -17,9 +17,8 @@ Window.clearcolor = (0.8, 0.8, 0.8, 1)
 
 
 class NumbApp(App):
-    def build(self):
-        game = Game()
-        return game
+    def build(self) -> Game:
+        return Game()
 
 if __name__ == "__main__":
     NumbApp().run()
