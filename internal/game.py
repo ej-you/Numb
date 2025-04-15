@@ -10,7 +10,7 @@ from kivy.metrics import dp
 from kivy.uix.scrollview import ScrollView
 
 from internal.base.digit_button import DigitButton
-from internal.services.digit_list_with_manager import DigitListWithManager
+from internal.services.digit_list_with_manager import DigitListManager
 
 
 class Game(BoxLayout):
@@ -40,7 +40,7 @@ class Game(BoxLayout):
         self.__pressed_digit_buttons: list[DigitButton] = []
 
         self.digit_list = self.__generate_digit_list()
-        self.__digit_manager = DigitListWithManager(self.columns)
+        self.__digit_manager = DigitListManager(self.columns)
 
         Logger.info(f"type self.digit_list {type(self.digit_list)}")
         Logger.info(f"self.digit_list {self.digit_list}")

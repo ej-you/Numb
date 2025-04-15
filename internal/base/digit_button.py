@@ -1,7 +1,6 @@
-# from kivy.graphics import Color, Line
-from kivy.uix.button import Button
 from kivy.logger import Logger
 from kivy.metrics import dp
+from kivy.uix.button import Button
 
 from internal.base.digit import Digit
 
@@ -29,31 +28,19 @@ class DigitButton(Digit, Button):
 
         # button functionality
         self.text = str(self._value)
-        self.background_color = self.focus_background_colors[self.__focus]
         self.bind(on_press=self.on_press_action)
         # button decorations
         self.__setup_decorations()
 
-    def __setup_decorations(self):
-        # base
-        self.background_down = ''
-        self.background_normal = ""
-        self.background_disabled_normal = ""
-        self.border = (10, 10, 10, 10)
+    # custom on_press action using for bind on_press
+    def on_press_action(self, instance):
+        self.__focus = not self.__focus
+        self.background_color = self.focus_background_colors[self.__focus]
+        Logger.debug(f"DigitButton on_press: Button {self} | Focus after press: {self.__focus}")
 
-        # Настройки размера
-        self.size_hint_y = None
-        self.height = dp(40)  # Высота кнопки (квадрат)
-
-        # Настройки текста
-        self.font_size = dp(30)  # Размер цифры
-        self.halign = 'center'
-        self.valign = 'middle'
-
-        # colors setup
-        self.color = self.colors["color"]
-        self.background_color = self.colors["background_color"]
-        self.disabled_color = self.colors["disabled_color"]
+    @property
+    def focus(self):
+        return self.__focus
 
     # returns copy of current digit button with new uuid
     def copy(self) -> "DigitButton":
@@ -62,17 +49,24 @@ class DigitButton(Digit, Button):
             copy.check()
         return copy
 
-    # custom on_press action using for bind on_press
-    def on_press_action(self, instance):
-        self.__focus = not self.__focus
-        self.background_color = self.focus_background_colors[self.__focus]
-        Logger.debug(f"Кнопка {self} | Фокус после нажатия: {self.__focus}")
-
-    @property
-    def focus(self):
-        return self.__focus
-
     # set checked True and disable button
     def check(self) -> None:
         super().check()
         self.disabled = True
+
+    def __setup_decorations(self):
+        # base
+        self.background_down = ''
+        self.background_normal = ""
+        self.background_disabled_normal = ""
+        # size
+        self.size_hint_y = None
+        self.height = dp(40)
+        # text
+        self.font_size = dp(30)
+        self.halign = 'center'
+        self.valign = 'middle'
+        # colors setup
+        self.color = self.colors["color"]
+        self.background_color = self.colors["background_color"]
+        self.disabled_color = self.colors["disabled_color"]
