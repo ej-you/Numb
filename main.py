@@ -1,24 +1,22 @@
 from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.boxlayout import BoxLayout
+from kivy.config import Config
+from kivy.logger import Logger, LOG_LEVELS
+from kivy.metrics import dp
+from kivy.core.window import Window
 
+from internal.game import Game
 
-class MyApp(App):
+Logger.setLevel(LOG_LEVELS["debug"])
+
+Config.set("graphics", "resizable", 0)
+Config.set("graphics", "height", dp(2340))
+Config.set("graphics", "width", dp(1080))
+Window.clearcolor = (0.8, 0.8, 0.8, 1)
+
+class NumbApp(App):
     def build(self):
-        self.label = Label(text="Привет, Android!")
-        button = Button(text="Нажми меня")
-        button.bind(on_press=self.update_label)
-
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(self.label)
-        layout.add_widget(button)
-
-        return layout
-
-    def update_label(self, instance):
-        self.label.text = "Текст изменен!"
-
+        game = Game()
+        return game
 
 if __name__ == "__main__":
-    MyApp().run()
+    NumbApp().run()

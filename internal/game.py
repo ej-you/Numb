@@ -1,5 +1,5 @@
-from kivy.event import EventDispatcher
-from kivy.graphics import Color, Rectangle
+from random import randint, shuffle
+
 from kivy.properties import NumericProperty, ListProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -7,9 +7,6 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.logger import Logger
 from kivy.metrics import dp
-
-from random import randint, shuffle
-
 from kivy.uix.scrollview import ScrollView
 
 from internal.base.digit_button import DigitButton
@@ -33,7 +30,7 @@ class Game(BoxLayout):
     btn_grid = GridLayout(
         cols=columns,
         spacing=dp(1),
-        # size_hint_y=None, # AAAAAAAAAAAAAAAAAA
+        size_hint_y=None, # AAAAAAAAAAAAAAAAAA
     )
     add_ability_btn = Button(text=f"+ 3", color=color_black)
 
@@ -47,6 +44,8 @@ class Game(BoxLayout):
 
         Logger.info(f"type self.digit_list {type(self.digit_list)}")
         Logger.info(f"self.digit_list {self.digit_list}")
+        # 3. Автоподстройка высоты содержимого
+        self.btn_grid.bind(minimum_height=self.btn_grid.setter('height'))
 
         # self.add_widget(self.display())
         self.bind(score=self._update_display)
@@ -77,7 +76,7 @@ class Game(BoxLayout):
             raise ValueError("The product of rows and columns must be an even number")
         # fill digit list
         digit_list = []
-        for i in range(0, list_len, 2):  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA *7
+        for i in range(0, list_len, 2):
             random_value = randint(1, 9)
             for _ in range(2):
                 digit_btn = DigitButton(random_value)
@@ -113,7 +112,7 @@ class Game(BoxLayout):
 
         Logger.info(f"points {points} | score {self.score}")
         points_line = self.__digit_manager.remove_checked_lines(self.digit_list)
-        Logger.info(f"points_line {points} | score {self.score}")
+        Logger.info(f"points_line {points_line} | score {self.score}")
         self.score += points + points_line
 
     def digit_btn_click(self, instance, status) -> None:
@@ -143,6 +142,12 @@ class Game(BoxLayout):
             self.__pressed_digit_buttons = []
 
     def __prepare_digit_list_to_display(self):
+        Logger.debug(f"prepare | score: {self.score}")
+        # if player checked all digits and no one digit buttons row left
+        if len(self.digit_list) == 0:
+            self.digit_list = self.__generate_digit_list()
+            self.add_ability = 3
+
         self.btn_grid.clear_widgets()
         for elem in self.digit_list:
             self.btn_grid.add_widget(elem)
@@ -160,7 +165,7 @@ class Game(BoxLayout):
             orientation='horizontal',
             size_hint_y=None,
             height=dp(50),
-            padding=(dp(0), dp(0), dp(0), dp(5)),
+            padding=(dp(0), dp(0), dp(0), dp(10)),
         )
 
         # new game button
@@ -193,21 +198,27 @@ class Game(BoxLayout):
     def display(self) -> None: # BoxLayout:
         main_layout = BoxLayout(
             orientation='vertical',
-            padding=dp(5),
+            padding=dp(10),
             # background_color=[0.7, 0.7, 0.7, 1],
         )
 
-        # # Создаем ScrollView
-        # scroll = ScrollView(
-        #     size_hint=(1, 1),  # Занимает всё доступное пространство
-        #     bar_width=dp(10),  # Толщина полосы прокрутки
-        #     scroll_type=['bars', 'content']  # Тип прокрутки
-        # )
+        # Создаем ScrollView
+        scroll = ScrollView(
+            size_hint=(1, 1),  # Занимает всё доступное пространство
+            # bar_width=dp(10),  # Толщина полосы прокрутки
+            bar_width=0,  # Толщина полосы прокрутки
+            # scroll_type=['bars', 'content']  # Тип прокрутки
+        )
+        scroll.do_scroll_x = False
+
         # scroll.add_widget(self.__prepare_digit_list_to_display())
+        scroll.add_widget(self.btn_grid)
 
         main_layout.add_widget(self.__prepare_header())
         # main_layout.add_widget(self.__prepare_digit_list_to_display())
-        main_layout.add_widget(self.btn_grid)
-        # main_layout.add_widget(scroll)
+        # main_layout.add_widget(self.btn_grid)
+
+        main_layout.add_widget(scroll)
+
         self.add_widget(main_layout)
         # return main_layout
