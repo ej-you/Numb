@@ -4,4 +4,6 @@
 .buildozer/
 bin/
 
-*/__pycache__/
+/internal/__pycache__/
+/internal/base/__pycache__/
+/internal/services/__pycache__/
