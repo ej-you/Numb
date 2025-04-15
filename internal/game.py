@@ -1,4 +1,6 @@
+from kivy.event import EventDispatcher
 from kivy.graphics import Color, Rectangle
+from kivy.properties import NumericProperty, ListProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
@@ -14,7 +16,7 @@ from internal.base.digit_button import DigitButton
 from internal.services.digit_list_with_manager import DigitListWithManager
 
 
-class Game:
+class Game(BoxLayout):
     color_white = [1, 1, 1, 1]
     # color_light_gray = [0.7, 0.7, 0.7, 1]
     color_black = [0, 0, 0, 1]
@@ -22,20 +24,50 @@ class Game:
     columns = 10
     rows = 4
 
-    def __init__(self):
-        self.__score = 0
+    score = NumericProperty(0)
+    digit_list = ListProperty([])
+    # amount of ability to add unchecked digits to the end of the list
+    add_ability = NumericProperty(3)
 
+    score_label = Label(text=f"score: 0", color=color_black)
+    btn_grid = GridLayout(
+        cols=columns,
+        spacing=dp(1),
+        # size_hint_y=None, # AAAAAAAAAAAAAAAAAA
+    )
+    add_ability_btn = Button(text=f"+ 3", color=color_black)
+
+    def __init__(self):
+        super().__init__()
         # list with pressed digit buttons instances
         self.__pressed_digit_buttons: list[DigitButton] = []
-        # amount of ability to add unchecked digits to the end of the list
-        self.__add_ability = 3
 
-        self.__digit_list = self.__generate_digit_list()
+        self.digit_list = self.__generate_digit_list()
         self.__digit_manager = DigitListWithManager(self.columns)
+
+        Logger.info(f"type self.digit_list {type(self.digit_list)}")
+        Logger.info(f"self.digit_list {self.digit_list}")
+
+        # self.add_widget(self.display())
+        self.bind(score=self._update_display)
+        self.bind(digit_list=self.update_digit_list)
+        self.bind(add_ability=self.update_add_ability)
+
+        self.add_ability_btn.bind(on_press=self._use_ability)
+
+        self.__prepare_digit_list_to_display()
+        self.display()
+
+    def _update_display(self, instance, value):
+        self.score_label.text = f"score: {self.score}"
 
     # new game button handler
     def on_new_game(self, instance):
-        self.__init__()
+        self.score = 0
+        self.digit_list = self.__generate_digit_list()
+        self.add_ability = 3
+        self.__pressed_digit_buttons: list[DigitButton] = []
+        self.add_ability_btn.disabled = False
 
     # create new random digit list
     def __generate_digit_list(self) -> list[DigitButton]:
@@ -56,24 +88,33 @@ class Game:
         return digit_list
 
     # decrement ability and return new value
-    def _use_ability(self, instance):
-        if self.__add_ability == 0:
+    def _use_ability(self, instance: Button):
+        Logger.debug(f"instance {instance}")
+        if self.add_ability == 0:
+            # instance.disabled = True
             return
         # add unchecked copies of digits to the end of the digit list
-        self.__digit_list.extend([elem.copy() for elem in self.__digit_list if not elem.is_checked()])
-        self.__add_ability -= 1
+        unchecked = [elem.copy() for elem in self.digit_list if not elem.is_checked()]
+        for elem in unchecked:
+            elem.bind(state=lambda instance, value: self.digit_btn_click(instance, value))
+        self.digit_list.extend(unchecked)
+        self.add_ability -= 1
+        if self.add_ability == 0:
+            instance.disabled = True
 
     def __process_digit_combination(self, digit_button1: DigitButton, digit_button2: DigitButton):
-        x1, y1 = self.__digit_manager.get_x_y_for_digit(self.__digit_list, digit_button1)
-        x2, y2 = self.__digit_manager.get_x_y_for_digit(self.__digit_list, digit_button2)
+        x1, y1 = self.__digit_manager.get_x_y_for_digit(self.digit_list, digit_button1)
+        x2, y2 = self.__digit_manager.get_x_y_for_digit(self.digit_list, digit_button2)
 
-        points = self.__digit_manager.check_digit_buttons(self.__digit_list, x1, y1, x2, y2)
+        points = self.__digit_manager.check_digit_buttons(self.digit_list, x1, y1, x2, y2)
         # if combination is invalid then skip all the next actions
         if not points:
             return
 
-        self.__score += points
-        Logger.info(f"points {points} | score {self.__score}")
+        Logger.info(f"points {points} | score {self.score}")
+        points_line = self.__digit_manager.remove_checked_lines(self.digit_list)
+        Logger.info(f"points_line {points} | score {self.score}")
+        self.score += points + points_line
 
     def digit_btn_click(self, instance, status) -> None:
         # срабатывает при нажатии и отпускании кнопки
@@ -101,15 +142,17 @@ class Game:
             # clear pressed digit buttons list
             self.__pressed_digit_buttons = []
 
-    def __prepare_digit_list_to_display(self) -> GridLayout:
-        btn_grid = GridLayout(
-            cols=self.columns,
-            spacing=dp(1),
-            # size_hint_y=None, # AAAAAAAAAAAAAAAAAA
-        )
-        for elem in self.__digit_list:
-            btn_grid.add_widget(elem)
-        return btn_grid
+    def __prepare_digit_list_to_display(self):
+        self.btn_grid.clear_widgets()
+        for elem in self.digit_list:
+            self.btn_grid.add_widget(elem)
+
+    def update_digit_list(self, instance, value):
+        self.__prepare_digit_list_to_display()
+
+    def update_add_ability(self, instance, value):
+        # Logger.debug(f"instance: {instance} | value {value}")
+        self.add_ability_btn.text = f"+ {self.add_ability}"
 
     def __prepare_header(self) -> BoxLayout:
         # container
@@ -125,27 +168,29 @@ class Game:
         new_game_btn.bind(on_press=self.on_new_game)
 
         # score
-        score_container = BoxLayout(
-            orientation='vertical',
-        )
-        score_container.add_widget(
-            Label(text="score", color=self.color_black)
-        )
-        score_container.add_widget(
-            Label(text=str(self.__score), color=self.color_black)
-        )
+        # score_container = BoxLayout(
+        #     orientation='vertical',
+        # )
+        # score_container.add_widget(
+        #     Label(text="score", color=self.color_black)
+        # )
+        # score_container.add_widget(
+        #     # Label(text=str(self.score), color=self.color_black)
+        #     self.score_label
+        # )
 
         # add unchecked digits button
-        add_unchecked_btn = Button(text=f"+ {self.__add_ability}", color=self.color_black)
-        add_unchecked_btn.bind(on_press=self._use_ability)
+        # add_unchecked_btn = self.add_ability_btn  # Button(text=f"+ {self.add_ability}", color=self.color_black)
+        # add_unchecked_btn.bind(on_press=self._use_ability)
 
         # fill header
         header.add_widget(new_game_btn)
-        header.add_widget(score_container)
-        header.add_widget(add_unchecked_btn)
+        header.add_widget(self.score_label)
+        # header.add_widget(add_unchecked_btn)
+        header.add_widget(self.add_ability_btn)
         return header
 
-    def display(self) -> BoxLayout:
+    def display(self) -> None: # BoxLayout:
         main_layout = BoxLayout(
             orientation='vertical',
             padding=dp(5),
@@ -161,6 +206,8 @@ class Game:
         # scroll.add_widget(self.__prepare_digit_list_to_display())
 
         main_layout.add_widget(self.__prepare_header())
-        main_layout.add_widget(self.__prepare_digit_list_to_display())
+        # main_layout.add_widget(self.__prepare_digit_list_to_display())
+        main_layout.add_widget(self.btn_grid)
         # main_layout.add_widget(scroll)
-        return main_layout
+        self.add_widget(main_layout)
+        # return main_layout
