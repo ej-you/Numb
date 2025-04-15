@@ -1,5 +1,5 @@
-from internal.services.digit_list import DigitList
 from internal.base.digit import Digit
+from internal.services.digit_list import DigitList
 
 
 # extends digit buttons list class with methods to check digit buttons

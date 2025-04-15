@@ -1,12 +1,12 @@
 from random import randint, shuffle
 
-from kivy.properties import NumericProperty, ListProperty
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
 from kivy.logger import Logger
 from kivy.metrics import dp
+from kivy.properties import NumericProperty, ListProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 
 from internal.base.digit_button import DigitButton
