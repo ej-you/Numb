@@ -19,4 +19,4 @@
 
 ### _Built app_
 
-> APK file can be found [here](https://drive.google.com/file/d/1lZxcrnlnBQeYXD14nBJA9bTI7aKWCV5U/view?usp=sharing)
+> APK file can be found [here](https://drive.google.com/drive/folders/1eXyMjEuRyL09_em6aoZ-fDTlYHk9qEa9?usp=drive_link)
