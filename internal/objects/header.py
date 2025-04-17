@@ -7,13 +7,13 @@ from internal.base.control_button import ControlButton
 
 
 class Header(BoxLayout):
-    color_black = [0, 0, 0, 1]
+    __color_black = [0, 0, 0, 1]
 
     score = NumericProperty(0)
     # amount of ability to add unchecked digits to the end of the list
     add_ability = NumericProperty(0)
 
-    def __init__(self, default_score: int, default_add_ability: int):
+    def __init__(self, default_score: int, default_add_ability: int) -> None:
         super().__init__()
         # header container
         self.orientation = 'horizontal'
@@ -23,13 +23,13 @@ class Header(BoxLayout):
 
         # widgets
         self.__btn_new_game = ControlButton(text="новая игра")
-        self.__label_score = Label(text=f"счет: {default_score}", color=self.color_black, font_size=dp(20))
+        self.__label_score = Label(text=f"счет: {default_score}", color=self.__color_black, font_size=dp(20))
         self.__btn_add_ability = ControlButton(text=f"+ {default_add_ability}")
         # properties bindings
-        self.bind(score=lambda instance, value: self._update_score())
-        self.bind(add_ability=lambda instance, value: self._update_add_ability())
         self.score = default_score
         self.add_ability = default_add_ability
+        self.bind(score=lambda instance, value: self._update_score())
+        self.bind(add_ability=lambda instance, value: self._update_add_ability())
 
         # fill header
         self.add_widget(self.__btn_new_game)
