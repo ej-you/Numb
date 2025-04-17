@@ -20,3 +20,7 @@
 ### _Built app_
 
 > APK file can be found [here](https://drive.google.com/drive/folders/1eXyMjEuRyL09_em6aoZ-fDTlYHk9qEa9?usp=drive_link)
+> 
+> _!! HINT !!_
+> <br>
+> Search file with name `numb.apk`
