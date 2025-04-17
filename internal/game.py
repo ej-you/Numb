@@ -10,6 +10,7 @@ from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 
 from internal.base.digit_button import DigitButton
+from internal.base.control_button import ControlButton
 from internal.services.digit_list_with_manager import DigitListManager
 
 
@@ -28,9 +29,9 @@ class Game(BoxLayout):
     # amount of ability to add unchecked digits to the end of the list
     add_ability = NumericProperty(default_add_ability)
 
-    score_label = Label(text=f"score: 0", color=color_black)
+    score_label = Label(text=f"счет: 0", color=color_black, font_size=dp(20))
     btn_grid = GridLayout(cols=columns, spacing=dp(1), size_hint_y=None)
-    add_ability_btn = Button(text=f"+ 3", color=color_black)
+    add_ability_btn = ControlButton(text=f"+ 3")
 
     def __init__(self) -> None:
         super().__init__()
@@ -53,7 +54,7 @@ class Game(BoxLayout):
         self.__display()
 
     def _update_score(self, instance, value) -> None:
-        self.score_label.text = f"score: {self.score}"
+        self.score_label.text = f"счет: {self.score}"
 
     def _update_digit_list(self, instance, value) -> None:
         self.__update_digit_list_display()
@@ -144,6 +145,7 @@ class Game(BoxLayout):
         if len(self.digit_list) == 0:
             self.digit_list = self.__generate_digit_list()
             self.add_ability = 3
+            self.add_ability_btn.disabled = False
 
         self.btn_grid.clear_widgets()
         for elem in self.digit_list:
@@ -158,7 +160,7 @@ class Game(BoxLayout):
             padding=(dp(0), dp(0), dp(0), dp(10)),
         )
         # new game button
-        new_game_btn = Button(text="new game", color=self.color_black)
+        new_game_btn = ControlButton(text="новая игра")
         new_game_btn.bind(on_press=self._on_new_game)
         # fill header
         header.add_widget(new_game_btn)
