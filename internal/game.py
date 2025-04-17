@@ -2,16 +2,14 @@ from random import randint, shuffle
 
 from kivy.logger import Logger
 from kivy.metrics import dp
-from kivy.properties import NumericProperty, ListProperty
+from kivy.properties import ListProperty
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 
 from internal.base.digit_button import DigitButton
-from internal.base.control_button import ControlButton
-from internal.services.digit_list_with_manager import DigitListManager
+from internal.objects.header import Header
+from internal.services.digit_list_manager import DigitListManager
 
 
 class Game(BoxLayout):
@@ -24,14 +22,8 @@ class Game(BoxLayout):
     default_score = 0
     default_add_ability = 3
 
-    score = NumericProperty(default_score)
     digit_list = ListProperty([])
-    # amount of ability to add unchecked digits to the end of the list
-    add_ability = NumericProperty(default_add_ability)
-
-    score_label = Label(text=f"счет: 0", color=color_black, font_size=dp(20))
     btn_grid = GridLayout(cols=columns, spacing=dp(1), size_hint_y=None)
-    add_ability_btn = ControlButton(text=f"+ 3")
 
     def __init__(self) -> None:
         super().__init__()
@@ -43,36 +35,33 @@ class Game(BoxLayout):
         self.orientation = 'vertical'
         self.padding = dp(10)
 
-        self.bind(score=self._update_score)
-        self.bind(digit_list=self._update_digit_list)
-        self.bind(add_ability=self._update_add_ability)
+        self.__header = Header(self.default_score, self.default_add_ability)
 
-        self.add_ability_btn.bind(on_press=self._use_ability)
+
+        # buttons is triggered by press down and pull up (so skip press down processing)
+        self.__header.btn_add_ability.bind(state=lambda instance, status: self._use_ability(status) if status != "down" else None)
+        self.__header.btn_new_game.bind(state=lambda instance, status: self._on_new_game(status) if status != "down" else None)
+
+        self.bind(digit_list=self._update_digit_list)
         self.btn_grid.bind(minimum_height=self.btn_grid.setter('height'))
 
         self.__update_digit_list_display()
         self.__display()
 
-    def _update_score(self, instance, value) -> None:
-        self.score_label.text = f"счет: {self.score}"
-
-    def _update_digit_list(self, instance, value) -> None:
-        self.__update_digit_list_display()
-
-    def _update_add_ability(self, instance, value) -> None:
-        self.add_ability_btn.text = f"+ {self.add_ability}"
-
     # new game button handler
-    def _on_new_game(self, instance) -> None:
-        self.score = self.default_score
-        self.add_ability = self.default_add_ability
-        self.add_ability_btn.disabled = False
+    def _on_new_game(self, status) -> None:
+        # self.score = self.default_score
+        self.__header.score = self.default_score
+        # self.add_ability = self.default_add_ability
+        self.__header.add_ability = self.default_add_ability
+        # self.add_ability_btn.disabled = False
+        self.__header.enable_add_ability()
         self.digit_list = self.__generate_digit_list()
         self.__pressed_digit_buttons: list[DigitButton] = []
 
     # decrement ability and return new value
-    def _use_ability(self, instance: Button) -> None:
-        if self.add_ability == 0:
+    def _use_ability(self, status) -> None:
+        if self.__header.add_ability == 0:
             return
 
         # add unchecked copies of digits to the end of the digit list
@@ -80,10 +69,13 @@ class Game(BoxLayout):
         for elem in unchecked:
             elem.bind(state=lambda instance, value: self._digit_btn_click(instance, value))
         self.digit_list.extend(unchecked)
-        self.add_ability -= 1
+        self.__header.add_ability -= 1
 
-        if self.add_ability == 0:
-            instance.disabled = True
+        if self.__header.add_ability == 0:
+            self.__header.disable_add_ability()
+
+    def _update_digit_list(self, instance, value) -> None:
+        self.__update_digit_list_display()
 
     def _digit_btn_click(self, instance, status) -> None:
         # triggered by press down and pull up (so skip press down processing)
@@ -137,36 +129,23 @@ class Game(BoxLayout):
         if not points:
             return
         points_line = self.__digit_manager.remove_checked_lines(self.digit_list)
-        self.score += points + points_line
+        # self.score += points + points_line
+        self.__header.score += points + points_line
 
     def __update_digit_list_display(self) -> None:
-        Logger.debug(f"prepare | score: {self.score}")
+        # Logger.debug(f"prepare | score: {self.score}")
+        Logger.debug(f"prepare | score: {self.__header.score}")
         # if player checked all digits and no one digit buttons row left
         if len(self.digit_list) == 0:
             self.digit_list = self.__generate_digit_list()
-            self.add_ability = 3
-            self.add_ability_btn.disabled = False
+            # self.add_ability = 3
+            # self.add_ability_btn.disabled = False
+            self.__header.add_ability = self.default_add_ability
+            self.__header.enable_add_ability()
 
         self.btn_grid.clear_widgets()
         for elem in self.digit_list:
             self.btn_grid.add_widget(elem)
-
-    def __header(self) -> BoxLayout:
-        # container
-        header = BoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height=dp(50),
-            padding=(dp(0), dp(0), dp(0), dp(10)),
-        )
-        # new game button
-        new_game_btn = ControlButton(text="новая игра")
-        new_game_btn.bind(on_press=self._on_new_game)
-        # fill header
-        header.add_widget(new_game_btn)
-        header.add_widget(self.score_label)
-        header.add_widget(self.add_ability_btn)
-        return header
 
     def __display(self) -> None:
         scroll = ScrollView(
@@ -176,5 +155,5 @@ class Game(BoxLayout):
         )
         scroll.add_widget(self.btn_grid)
 
-        self.add_widget(self.__header())
+        self.add_widget(self.__header)
         self.add_widget(scroll)
